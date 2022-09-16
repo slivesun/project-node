@@ -1,0 +1,1 @@
+{"name":"王小黑","info":"黑","job":"宠物","color":"red"}{"name":"GT","info":"EQW","job":"QE","color":"T"}
