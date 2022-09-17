@@ -4,19 +4,19 @@ const fs = require('fs');
 const path = require('path')
 const port = 5555; //服务端口
 // 假数据
-const userData = [{
-        id: '1',
-        job: '董事长',
-        name: '张华',
-        color: 'cyan',
-        info: `中国科技有限责任公司董事长，持股90%，成熟稳重、凭亿近人，是公司的一级顶梁柱，资产无法衡量。`
-    },
+const userData = [
     {
         id: '2',
-        job: '董事长夫人',
+        job: '董事长',
         name: '王晗',
         color: 'pink',
-        info: `中国科技有限责任公司董事长夫人，持股10%，性感妖娆、温柔贤惠，是公司的一级顶梁柱，资产无法衡量。`
+        info: `中国科技有限责任公司董事长夫人，持股100%，性感妖娆、温柔贤惠，是公司的一级顶梁柱，资产无法衡量。`
+    },  {
+        id: '1',
+        job: '董事长老公',
+        name: '张华',
+        color: 'cyan',
+        info: `中国科技有限责任公司董事长，持股0%，成熟稳重、凭亿近人，是公司的一级顶梁柱，资产无法衡量。`
     },
     {
         id: '3',
@@ -95,9 +95,10 @@ const server = http.createServer((req, res) => {
                 // 注意数据传过来可能有多个chunk
                 // 我们需要拼接这些chunk
                 let postData = ''
+                res.setHeader('Content-Type', 'application/json;charset=utf-8');
                 req.on('data', chunk => {
                     console.log(chunk, 'chunk')
-                    postData = [postData + chunk]
+                    postData = postData + chunk
                 })
                 req.on('end', () => {
                     // 数据传完后往db.txt插入内容

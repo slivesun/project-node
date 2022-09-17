@@ -1,1 +1,1 @@
-{"name":"王小黑","info":"黑","job":"宠物","color":"red"}{"name":"GT","info":"EQW","job":"QE","color":"T"}
+{"name":"现付","info":"地基加固","job":"大吉大利","color":"Colorado"}{"name":"王晗","info":"的还是打卡","job":"董事长","color":"yelow"}
