@@ -2,65 +2,10 @@ const http = require('http'); //原生node 自带模块
 const url = require('url');
 const fs = require('fs');
 const path = require('path')
+let node_uuid = require('node-uuid'); //生成uuid
 const port = 5555; //服务端口
-// 假数据
-const userData = [
-    {
-        id: '2',
-        job: '董事长',
-        name: '王晗',
-        color: 'pink',
-        info: `中国科技有限责任公司董事长夫人，持股100%，性感妖娆、温柔贤惠，是公司的一级顶梁柱，资产无法衡量。`
-    },  {
-        id: '1',
-        job: '董事长老公',
-        name: '张华',
-        color: 'cyan',
-        info: `中国科技有限责任公司董事长，持股0%，成熟稳重、凭亿近人，是公司的一级顶梁柱，资产无法衡量。`
-    },
-    {
-        id: '3',
-        job: '董事长爱宠',
-        name: '张小黑',
-        color: 'green',
-        info: `中国科技有限责任公司董事长爱宠，持股0%，活泼好动、好吃懒做，是公司的地板砖，资产一袋猫粮，两个碗。`
-    },
-    {
-        id: '3',
-        job: '董事长爱宠',
-        name: '张小黑',
-        color: 'green',
-        info: `中国科技有限责任公司董事长爱宠，持股0%，活泼好动、好吃懒做，是公司的地板砖，资产一袋猫粮，两个碗。`
-    },
-    {
-        id: '3',
-        job: '董事长爱宠',
-        name: '张小黑',
-        color: 'green',
-        info: `中国科技有限责任公司董事长爱宠，持股0%，活泼好动、好吃懒做，是公司的地板砖，资产一袋猫粮，两个碗。`
-    },
-    {
-        id: '3',
-        job: '董事长爱宠',
-        name: '张小黑',
-        color: 'green',
-        info: `中国科技有限责任公司董事长爱宠，持股0%，活泼好动、好吃懒做，是公司的地板砖，资产一袋猫粮，两个碗。`
-    },
-    {
-        id: '3',
-        job: '董事长爱宠',
-        name: '张小黑',
-        color: 'green',
-        info: `中国科技有限责任公司董事长爱宠，持股0%，活泼好动、好吃懒做，是公司的地板砖，资产一袋猫粮，两个碗。`
-    },
-    {
-        id: '3',
-        job: '董事长爱宠',
-        name: '张小黑',
-        color: 'green',
-        info: `中国科技有限责任公司董事长爱宠，持股0%，活泼好动、好吃懒做，是公司的地板砖，资产一袋猫粮，两个碗。`
-    },
-]
+// 引入文件数据
+const userData = path.join(__dirname, './user.json')
 const server = http.createServer((req, res) => {
     // 获取url的各个部分
     // url.parse可以将req.url解析成一个对象
@@ -72,7 +17,8 @@ const server = http.createServer((req, res) => {
     const {
         pathname
     } = urlObj;
-    console.log(pathname, 'pathname')
+    // console.log(pathname, 'pathname')
+
     // api开头的是API请求
     if (pathname.startsWith('/api')) {
         // 路由判断
@@ -80,16 +26,26 @@ const server = http.createServer((req, res) => {
             // 获取http请求动词，方式
             const method = req.method;
             if (method == 'GET') { //如果说是get请求方式
-
                 res.statusCode = 200
                 res.setHeader('Content-Type', 'application/json')
-                setTimeout(() => {
-                    res.end(JSON.stringify({
-                        code: 200,
-                        data: userData,
-                        message: '成功'
-                    }))
-                }, 1000)
+                fs.readFile(userData, 'utf-8', (err, datastr) => {
+                    // console.log(datastr, 'datastr')
+                    let user = JSON.parse(datastr) || []
+                    user = user.map((item) => {
+                        if (item.id) {
+                            return item
+                        }
+                    }).filter((_) => _)
+                    
+                    setTimeout(() => {
+                        console.log('读数据成功')
+                        res.end(JSON.stringify({
+                            code: 200,
+                            data: user || [],
+                            message: '成功'
+                        }))
+                    }, 1000)
+                })
                 return
             } else if (method == "POST") {
                 // 注意数据传过来可能有多个chunk
@@ -97,13 +53,35 @@ const server = http.createServer((req, res) => {
                 let postData = ''
                 res.setHeader('Content-Type', 'application/json;charset=utf-8');
                 req.on('data', chunk => {
-                    console.log(chunk, 'chunk')
+                    // console.log(chunk, 'chunk')
                     postData = postData + chunk
                 })
                 req.on('end', () => {
                     // 数据传完后往db.txt插入内容
-                    fs.appendFile(path.join(__dirname, 'db.txt'), postData, () => {
-                        res.end(postData)
+                    // fs.appendFile(path.join(__dirname, 'db.txt'), postData, () => {
+                    //     res.end(postData)
+                    // })
+                    let postDatatemp = {
+                        ...JSON.parse(postData),
+                        id: node_uuid.v4()
+                    }
+                    // console.log(postDatatemp, 'postDatatemp')
+                    fs.readFile(userData, 'utf-8', (err, dataStr) => {
+                        if (err) return
+                        // console.log(dataStr, 'data')
+                        let data = JSON.parse(dataStr) || []
+                        data.push(postDatatemp)
+                        fs.writeFile(userData, JSON.stringify(data), (err) => {
+                            if (err) {
+                                return console.log('写入失败')
+                            }
+                            console.log('写入成功')
+                            res.end(JSON.stringify({
+                                code: 200,
+                                data: true,
+                                message: '新增成功'
+                            }))
+                        })
                     })
                 })
                 return
@@ -126,16 +104,9 @@ const server = http.createServer((req, res) => {
             return
         }
     }
-
-
-
     res.setHeader('Content-Type', 'text/html;charset=utf-8')
     res.end('你好，node.js')
 })
 server.listen(port, () => {
     console.log('node.js启动了', `访问地址是 http://localhost:${port}`)
 })
-
-// server.listen(port, () => {
-//   console.log(`Server is running on http://127.0.0.1:${port}/`)
-// })
