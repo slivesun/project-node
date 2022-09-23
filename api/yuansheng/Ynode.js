@@ -41,7 +41,7 @@ const server = http.createServer((req, res) => {
                         console.log('读数据成功')
                         res.end(JSON.stringify({
                             code: 200,
-                            data: user || [],
+                            data: user.reverse() || [],
                             message: '成功'
                         }))
                     }, 1000)
